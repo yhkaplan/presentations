@@ -58,6 +58,7 @@ struct MyView: View {
 4. Modernize UIKit usage
 5. Plan and prototype
 6. Two approaches
+7. Tips
 
 ---
 
@@ -157,19 +158,28 @@ struct MyView: View {
 
 ---
 
-# Conclusion
+# Tips
 * Don't mix too much
 * Start with _easier_ screens
 * Don’t hurry
-* Make plans
-* _Study_ SwiftUI and Combine
+* Study SwiftUI and Combine _in advance_
 
 ^ Detailed, written plans
 ^ Better to think first
 ^ But don’t put it off too long
 ^ Don’t bite off more than you can chew
 ^ Choose screens that could particularly benefit and result in less code like List views and Forms
-^ 本番のアプリでSwiftUIに移行する前に、しっかりと準備することで、より効率よく移行ができ、より品質の高いコードを書けるようになると思うので、ぜひ先ほどの内容が参考になればと思います。多くの場合、SwiftUIのおかげで仕事が前より楽になるので、ワクワク感を持って、進みましょう！
+
+---
+
+# Conclusion
+
+^ Modernize Swift Usage
+^ Modernize UIKit usage
+^ Plan and prototype
+^ Two approaches
+^ Tips
+^ 本番のアプリでSwiftUIに移行する前に、しっかりと準備することで、より効率よく移行ができ、より品質の高いコードを書けるようになると思うので、先ほどの内容が参考になればと思います。多くの場合、SwiftUIのおかげで仕事が前より楽になるので、ワクワク感を持って、進みましょう！
 
 ---
 
