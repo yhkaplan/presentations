@@ -17,8 +17,8 @@ autoscale: true
 ---
 
 # What is a backend driven UI?
-* Extreme end: every individual view defined in JSON
-* Less extreme: order of and type of view defined in JSON
+* Extreme end: every individual view defined by backend
+* Less extreme: order of and type of view defined by backend
 * Why JSON?
 
 ---
@@ -48,6 +48,29 @@ autoscale: true
 ---
 
 # Code Example
+
+```swift
+let homeReducer = Reducer<HomeState, HomeAction, HomeEnvironment> { state, action, environment in
+    switch action {
+    case .loadSectionData:
+        state.isSectionLoading = true
+        return environment.homeService.homeContentPublisher()
+            .replaceError(with: [])
+            .receive(on: DispatchQueue.main)
+            .map { HomeAction.loadItemData(sections: $0) }
+            .eraseToEffect()
+
+    case let .loadItemData(sections):
+        state.isSectionLoading = true
+        return environment.homeService.sectionItemsPublisher(sections: sections)
+            .replaceError(with: [:])
+            .receive(on: DispatchQueue.main)
+            .map { HomeAction.setSections(sections: $0) }
+            .eraseToEffect()
+    }
+    return .none
+}
+```
 
 ^ Explore Shop Project
 
