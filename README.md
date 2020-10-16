@@ -12,3 +12,10 @@ Repo of all my presentations since Sept of 2020
 - [Slides](https://speakerdeck.com/yhkaplan/migrating-from-uikit-to-swiftui-efficiently)
 - [YouTube - English Version](https://www.youtube.com/watch?v=kedKk96SXxA)
 - [YouTube - Japanese Version](https://www.youtube.com/watch?v=Mavk5AQAz7U)
+
+### Backend-Driven UI: Making Screens Dynamic
+
+> A talk given at Pepabo Mobile Conference
+
+- [Source](https://github.com/yhkaplan/presentations/tree/main/2020/10/16)
+- [Slides](https://speakerdeck.com/yhkaplan/backend-driven-ui-making-screens-dynamic)
