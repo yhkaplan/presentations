@@ -12,22 +12,27 @@ autoscale: true
 # Domains
 
 - **Apple platform GUI apps**
-- Server
-- ML
-- System Programming
-- 🌍**World Domination**
+- Server-side
+- Machine Learning
+- Systems Programming
+- 🌍**World Domination**⚔️
 
 ^ 10th on Tiobe Index, behind C++ and Java but ahead of Go, Rust, etc
 
 ---
 
 # What is Concurrency
-- Parallel
-- Async
-- Concurrency
-- Atomicity/atomic/non-atomic
 
-// TODO: write out definitions
+- Parallel
+  - Doing multiple pieces of work at the same time
+- Async
+  - Work that doesn't block the calling thread
+- Concurrency
+  - Doing more than one piece of work at a time, with overlapping and non-overlapping work
+  - Preventing unnessary waiting
+- Atomicity/atomic/non-atomic
+  - `Atomicity is a safety measure which enforces that operations do not complete in an unpredictable way when accessed by multiple threads or processes simultaneously.`
+  - [source](https://www.vadimbulavin.com/atomic-properties/)
 
 ---
 
@@ -58,9 +63,9 @@ autoscale: true
 - ✅ Callbacks
 - ✅ Reactive/FRP (RxSwift, Combine, ReactiveSwift)
 - ✅ Promises (SwiftNIO, PromiseKit, Combine.Future)
+- ⏳ General Concurrency (Tasks)
 - ⏳ Async/await
 - ⏳ Actors
-- ⏳ Task APIs // TODO: this needed?
 
 ---
 
@@ -76,15 +81,38 @@ autoscale: true
 
 # Async/await
 
-// TODO: error handling and more details!
-- Write asynchronous code as if it were synchronous
+---
+
+- Callbacks (completion handlers) are
+  - complex
+  - error-prone
 
 ```swift
-let users = await try getUsers()
+func processImageData(completion: @escaping (Image?) -> Void) {
+  loadWebResource("data-url") { dataResult in
+    guard case let .success(data) = dataResult else {
+      completion(nil)
+      return
+    }
+    loadWebResource("image-url") { imageResult in
+      // I got tired of typing
+    }
+  }
+}
+```
 
-// definition
-func getUsers() async throws -> data {
-  // ...
+---
+
+- Write asynchronous code as if it were synchronous
+- Succint and easy to reason about
+
+```swift
+func processImageData() async throws -> Image {
+  let dataResource = await try loadWebResource("some-url")
+  let imageResource = await try loadWebResource("another-url")
+  let imageTmp = await try decodeImage(dateResource, imageResource)
+  let imageResult = await try resizeImage(image)
+  return imageResult
 }
 ```
 
@@ -92,13 +120,55 @@ func getUsers() async throws -> data {
 
 ---
 
+# General Concurrency
+
+- What's wrong w/ this code?
+
+```swift
+func makeDinner() async throws -> Meal {
+  let veggies = await try chopVegetables()
+  let meat = await try marinateMeat()
+  let oven = await try preheatOven()
+
+  let dish = Dish(ingredients: [veggies, meat])
+  return await try oven.cook(dish)
+}
+```
+
+---
+
+- It's not concurrent
+- Waiting for each step to finish
+- Let's fix it!
+
+---
+
+- `async let` makes separate, concurrently executing child tasks
+- All async functions run as part of an async /task/
+  - Carry schedule info like priority and act as interface for cancellation and such
+- Try is written at call-site of the constant
+- On completion, the constants are initialized
+
+```swift
+func makeDinner() async throws -> Meal {
+  async let veggies = chopVegetables()
+  async let meat = marinateMeat()
+  async let oven = preheatOven()
+
+  let dish = Dish(ingredients: await [try veggies, meat])
+  return await try oven.cook(dish)
+}
+```
+
+---
+
 # Actors
 
 * Eliminate data races w/ compiler checks
 * Set of limitations called `actor isolation`
-	* For example, instance properties can only be accessed on `self`
-	* Conversely, immutable value type properties don’t require isolation
-	* To call an instance method that mutates self, make that method `async`
+    * For example, instance properties can only be accessed on `self`
+    * Conversely, immutable value type properties don’t require isolation
+    * To call an instance method that mutates self, make that method `async`
 
 ---
 
@@ -182,7 +252,6 @@ actor class BankAccount {
 
 # Go Example
 
-- I think something similar can be done w/ `sync.WaitGroup`
 
 ```go
 // Worker represents the worker that executes the job
@@ -219,6 +288,7 @@ func (w Worker) Stop() {
 }
 ```
 
+- I think something similar can be done w/ `sync.WaitGroup`
 - [Source](https://gist.github.com/lattner/31ed37682ef1576b16bca1432ea9f782#go)
 
 ---
