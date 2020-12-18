@@ -19,3 +19,10 @@ Repo of all my presentations since Sept of 2020
 
 - [Source](https://github.com/yhkaplan/presentations/tree/main/2020/10/16)
 - [Slides](https://speakerdeck.com/yhkaplan/backend-driven-ui-making-screens-dynamic)
+
+### Swift and Concurrency: The Plan for World Domination
+
+> A talk given at Pepabo Tech Friday
+
+- [Source](https://github.com/yhkaplan/presentations/tree/main/2020/12/18)
+- [Slides](https://speakerdeck.com/yhkaplan/swift-and-concurrency-the-plan-for-world-domination)
