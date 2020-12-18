@@ -31,8 +31,12 @@ autoscale: true
   - Doing more than one piece of work at a time, with overlapping and non-overlapping work
   - Preventing unnessary waiting
 - Atomicity/atomic/non-atomic
-  - `Atomicity is a safety measure which enforces that operations do not complete in an unpredictable way when accessed by multiple threads or processes simultaneously.`
-  - [source](https://www.vadimbulavin.com/atomic-properties/)
+
+> Atomicity is a safety measure which enforces that operations do not complete in an unpredictable way when accessed by multiple threads or processes simultaneously.
+
+- [source](https://www.vadimbulavin.com/atomic-properties/)
+
+^ 不可分性 / アトミック性
 
 ---
 
@@ -235,7 +239,7 @@ actor class BankAccount {
 
 ---
 
-# Comparison
+# Language Comparison
 
 - Go
     - Goroutines, locks, wait groups and more
@@ -295,7 +299,7 @@ func (w Worker) Stop() {
 
 # In Swift?
 
-```
+```swift
 actor class Worker {
   func do(job: Job) async {
     // ...
