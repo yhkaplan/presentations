@@ -112,10 +112,10 @@ func processImageData(completion: @escaping (Image?) -> Void) {
 
 ```swift
 func processImageData() async throws -> Image {
-  let dataResource = await try loadWebResource("some-url")
-  let imageResource = await try loadWebResource("another-url")
-  let imageTmp = await try decodeImage(dateResource, imageResource)
-  let imageResult = await try resizeImage(image)
+  let dataResource = try await loadWebResource("some-url")
+  let imageResource = try await loadWebResource("another-url")
+  let imageTmp = try await decodeImage(dateResource, imageResource)
+  let imageResult = try await resizeImage(image)
   return imageResult
 }
 ```
@@ -130,12 +130,12 @@ func processImageData() async throws -> Image {
 
 ```swift
 func makeDinner() async throws -> Meal {
-  let veggies = await try chopVegetables()
-  let meat = await try marinateMeat()
-  let oven = await try preheatOven()
+  let veggies = try await chopVegetables()
+  let meat = try await marinateMeat()
+  let oven = try await preheatOven()
 
   let dish = Dish(ingredients: [veggies, meat])
-  return await try oven.cook(dish)
+  return try await oven.cook(dish)
 }
 ```
 
@@ -160,7 +160,7 @@ func makeDinner() async throws -> Meal {
   async let oven = preheatOven()
 
   let dish = Dish(ingredients: await [try veggies, meat])
-  return await try oven.cook(dish)
+  return try await oven.cook(dish)
 }
 ```
 
