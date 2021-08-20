@@ -22,8 +22,10 @@ autoscale: true
 
 - Joshua Kaplan (`yhkaplan`)
 - Senior iOS Engineer @ GMO Pepabo working on *minne*
-- Into tooling, frameworks, and architecture
+- Tooling, frameworks, and architecture
 - Stay-at-home shiba-inu parent
+
+![fit, right](assets/shira.HEIC)
 
 ---
 
@@ -33,6 +35,7 @@ autoscale: true
 * Cell editing
 * Headers and footers
 * Prefetching
+* Dynamic layout transitions
 
 ---
 
@@ -40,15 +43,17 @@ autoscale: true
 
 ---
 
-## Definition of UICollectionView and what it’s for
+## Definition
 
 - Standard Grid
-- Comparison w/ UITableView
+- Difference w/ UITableView
 - Manages multiple scrolling views
     - **completely configurable** layout
     - High performance, view recycling
 
-![80%right](assets/basic_grid.gif)
+![inline, fit, right](assets/basic_grid.gif) ![inline, fit, right](assets/class_diagram.svg)
+
+^explanation of why it's so imperative and when it was made public
 
 ---
 
@@ -56,6 +61,8 @@ autoscale: true
 
 - UICollectionViewFlowLayout
 - Define in code UICollectionViewFlowLayout or delegate, or interface builder
+
+![fit, right](assets/flow_layout_class_diagram.svg)
 
 ---
 
@@ -195,7 +202,7 @@ final class ListVC: UIViewController {
 ## CompositionalLayout
 
 - Complex, grouped sections
-- Convenient for future proofing
+- Convenient for future proofing simpler views
 
 ![fit|right](assets/compositional_layout.jpeg)
 
@@ -230,15 +237,126 @@ final class BasicCompositionalLayoutGridVC: UIViewController {
 
 ## Custom Layout
 
+- Subclass UICollectionViewFlowLayout or UICollectionViewLayout
+- Procedural and verbose
+- Powerful
+- UIKitDynamics
+- Easy to pop-in OSS layouts
+
+![fit, right](assets/custom_layout.gif)
+
 ---
 
-// TODO: code sample
+```swift
+open class BouncyLayout: UICollectionViewFlowLayout {
+    lazy var dynamicAnimator = UIDynamicAnimator(collectionViewLayout: self)
+    var latestDelta: CGFloat = 0.0
+    var visibleIndexPaths: Set<IndexPath> = []
 
----
+    override init() {...}
+    required public init?(coder: NSCoder) {...}
 
-## UIKitDynamics
+    override open func prepare() {
+        super.prepare()
 
-// TODO: code sample
+        // Need to overflow our actual visible rect slightly to avoid flickering.
+        guard let collectionView = collectionView else { return }
+
+        let rect = CGRect(origin: collectionView.bounds.origin, size: collectionView.frame.size)
+        let visibleRect = rect.insetBy(dx: -100.0, dy: -100.0)
+        guard let itemsInVisibleRect = super.layoutAttributesForElements(in: visibleRect) else { return }
+        let itemsIndexPathsInVisibleRect: Set<IndexPath> = Set(itemsInVisibleRect.map { $0.indexPath })
+
+        // Step 1: Remove any behaviors that are no longer visible.
+        let noLongerVisibleBehaviors = dynamicAnimator.behaviors.filter { behavior in
+            guard
+                let behaviorItem = (behavior as? UIAttachmentBehavior)?.items.first,
+                let layoutAttribute = behaviorItem as? UICollectionViewLayoutAttributes
+            else { return false }
+
+            return !itemsIndexPathsInVisibleRect.contains(layoutAttribute.indexPath)
+        }
+
+        noLongerVisibleBehaviors.forEach { behavior in
+            dynamicAnimator.removeBehavior(behavior)
+            if let layoutAttribute = (behavior as? UIAttachmentBehavior)?.items.first as? UICollectionViewLayoutAttributes {
+                visibleIndexPaths.remove(layoutAttribute.indexPath)
+            }
+        }
+
+        // Step 2: Add any newly visible behaviors.
+        // A "newly visible" item is one that is in the itemsInVisibleRect(Set|Array) but not in the visibleIndexPathsSet
+        let newlyVisibleItems = itemsInVisibleRect.filter { !visibleIndexPaths.contains($0.indexPath) }
+        let touchLocation = collectionView.panGestureRecognizer.location(in: collectionView)
+
+        newlyVisibleItems.forEach { item in
+            var center = item.center
+            let springBehavior = UIAttachmentBehavior(item: item, attachedToAnchor: center)
+
+            springBehavior.length = 0.0
+            springBehavior.damping = 0.8
+            springBehavior.length = 1.0
+
+            // If our touchLocation is not (0,0), we'll need to adjust our item's center "in flight"
+            if CGPoint.zero != touchLocation {
+                let yDistanceFromTouch = abs(touchLocation.y - springBehavior.anchorPoint.y)
+                let xDistanceFromTouch = abs(touchLocation.x - springBehavior.anchorPoint.x)
+                let scrollResistance = (yDistanceFromTouch + xDistanceFromTouch) / 1_500.0
+
+                if latestDelta < 0 {
+                    center.y += max(latestDelta, latestDelta * scrollResistance)
+                } else {
+                    center.y += min(latestDelta, latestDelta * scrollResistance)
+                }
+                item.center = center
+            }
+
+            dynamicAnimator.addBehavior(springBehavior)
+            visibleIndexPaths.insert(item.indexPath)
+        }
+    }
+
+    open override func layoutAttributesForElements(in rect: CGRect) -> [UICollectionViewLayoutAttributes]? {
+        return dynamicAnimator.items(in: rect) as? [UICollectionViewLayoutAttributes]
+    }
+
+    open override func layoutAttributesForItem(at indexPath: IndexPath) -> UICollectionViewLayoutAttributes? {
+        return dynamicAnimator.layoutAttributesForCell(at: indexPath)
+    }
+
+    open override func shouldInvalidateLayout(forBoundsChange newBounds: CGRect) -> Bool {
+        guard let collectionView = collectionView else { return false }
+        let scrollView = collectionView
+
+        let delta = newBounds.origin.y - scrollView.bounds.origin.y
+        latestDelta = delta
+
+        let touchLocation = collectionView.panGestureRecognizer.location(in: collectionView)
+
+        dynamicAnimator.behaviors.forEach { behavior in
+            guard let springBehavior = behavior as? UIAttachmentBehavior else { return }
+            let yDistanceFromTouch = abs(touchLocation.y - springBehavior.anchorPoint.y)
+            let xDistanceFromTouch = abs(touchLocation.x - springBehavior.anchorPoint.x)
+
+            let scrollResistance = (yDistanceFromTouch + xDistanceFromTouch) / 1_500.0
+
+            if let item = springBehavior.items.first as? UICollectionViewLayoutAttributes {
+                var center = item.center
+                if delta < 0 {
+                    center.y += max(delta, delta * scrollResistance)
+                } else {
+                    center.y += min(delta, delta * scrollResistance)
+                }
+                item.center = center
+
+                dynamicAnimator.updateItem(usingCurrentState: item)
+            }
+        }
+
+        return false
+    }
+}
+```
 
 ---
 
@@ -249,7 +367,10 @@ final class BasicCompositionalLayoutGridVC: UIViewController {
 ## DiffableDataSources
 
 - Fits most cases
-- iOS 14 and 15 added // TODO: x
+- iOS 14 and 15 added 
+    - Cell/section reordering
+    - Updating specific sections
+    - Reloading completely w/o diff for better performance on large changes
 - Animation behavior difficult to customize
 - [SE-0240: Ordered Collection Diffing](https://github.com/apple/swift-evolution/blob/main/proposals/0240-ordered-collection-diffing.md) is your friend
     - Find inserted, deleted, and updated items/sections, then simply use [`performBatchUpdates(_:completion:)`](https://developer.apple.com/documentation/uikit/uicollectionview/1618045-performbatchupdates)
@@ -375,6 +496,8 @@ final class ImageContentView: UIView, UIContentView {
 }
 ```
 
+---
+
 ## Registration
 
 ```swift
@@ -404,9 +527,12 @@ final class BasicCompositionalLayoutGridVC: UIViewController {
 
 ## Updating
 
-// TODO:
-* https://developer.apple.com/documentation/uikit/uicollectionviewcell/3751733-configurationupdatehandler
-* https://jessesquires.github.io/wwdc-notes/2021/10252_blazing_fast_collection_views.html
+- Update based on UICellConfigurationState
+    - isSelected, isHighlighted, isDisabled, etc
+- [`reconfigureItems(_:)`](https://developer.apple.com/documentation/uikit/nsdiffabledatasourcesnapshot/3804468-reconfigureitems)
+- [`configurationUpdateHandler: UICollectionViewCell.ConfigurationUpdateHandler?`](https://developer.apple.com/documentation/uikit/uicollectionviewcell/3751733-configurationupdatehandler)
+
+^ TODO: code example
 
 ---
 
@@ -419,6 +545,8 @@ final class BasicCompositionalLayoutGridVC: UIViewController {
 - List and Grid
 - Performance
 - Customizability
+
+^ TODO: code example
 
 ---
 
@@ -436,11 +564,12 @@ final class BasicCompositionalLayoutGridVC: UIViewController {
 - Older ways and SwiftUI work too
 - You mostly don't need UITableView anymore
 - UICollectionView is _really_ flexible and performant
-- SwiftUI's LazyGrid views are still somewhat lacking in comparison
+- SwiftUI's Grid views are still somewhat lacking in comparison
 
 ---
 
 ## References and Miscellaneous
+
 - Transitions and dynamically changing layout
 
 ### OSS Examples
@@ -461,8 +590,6 @@ final class BasicCompositionalLayoutGridVC: UIViewController {
 * Pinterest-like layout [ChernyshenkoTaras/SquareFlowLayout](https://github.com/ChernyshenkoTaras/SquareFlowLayout)
 * Carousel layout: [zepojo/UPCarouselFlowLayout](https://github.com/zepojo/UPCarouselFlowLayout)
 *  UIKitDynamics [GitHub - roberthein/BouncyLayout: Make. It. Bounce.](https://github.com/roberthein/BouncyLayout)
-
-### CompositionalLayout
 
 ### Comparison w/ SwiftUI.Grid
 * Performance
