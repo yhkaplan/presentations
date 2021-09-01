@@ -24,6 +24,7 @@ autoscale: true
 - Senior iOS Engineer @ GMO Pepabo working on *minne*
 - Tooling, frameworks, and architecture
 - Stay-at-home shiba-inu parent
+- He/him
 
 ![fit, right](assets/shira.HEIC)
 
@@ -39,7 +40,7 @@ autoscale: true
 
 ---
 
-# Layout
+# [fit] Layout
 
 ---
 
@@ -51,9 +52,16 @@ autoscale: true
     - **completely configurable** layout
     - High performance, view recycling
 
-![inline, fit, right](assets/basic_grid.gif) ![inline, fit, right](assets/class_diagram.svg)
+![fit, right](assets/basic_grid.gif)
+
 
 ^explanation of why it's so imperative and when it was made public
+
+---
+
+## Class hierarchy
+
+![fit, right](assets/class_diagram.svg)
 
 ---
 
@@ -360,20 +368,22 @@ open class BouncyLayout: UICollectionViewFlowLayout {
 
 ---
 
-# Data and Cell Configuration
+# [fit] Data and Cell Configuration
 
 ---
 
 ## DiffableDataSources
 
 - Fits most cases
-- iOS 14 and 15 added 
+- iOS 14 and 15 added
     - Cell/section reordering
     - Updating specific sections
     - Reloading completely w/o diff for better performance on large changes
 - Animation behavior difficult to customize
 - [SE-0240: Ordered Collection Diffing](https://github.com/apple/swift-evolution/blob/main/proposals/0240-ordered-collection-diffing.md) is your friend
     - Find inserted, deleted, and updated items/sections, then simply use [`performBatchUpdates(_:completion:)`](https://developer.apple.com/documentation/uikit/uicollectionview/1618045-performbatchupdates)
+
+^ Seems easy to move from RxDataSources if you haven't already
 
 ---
 
@@ -527,16 +537,27 @@ final class BasicCompositionalLayoutGridVC: UIViewController {
 
 ## Updating
 
-- Update based on UICellConfigurationState
-    - isSelected, isHighlighted, isDisabled, etc
+- Update based on UICellConfigurationState w/o subclassing cell
+    - UICellConfigurationState: isSelected, isHighlighted, isDisabled, etc
 - [`reconfigureItems(_:)`](https://developer.apple.com/documentation/uikit/nsdiffabledatasourcesnapshot/3804468-reconfigureitems)
 - [`configurationUpdateHandler: UICollectionViewCell.ConfigurationUpdateHandler?`](https://developer.apple.com/documentation/uikit/uicollectionviewcell/3751733-configurationupdatehandler)
 
-^ TODO: code example
+```swift
+cell.configurationUpdateHandler = { cell, state in
+    var content = UIListContentConfiguration.cell().updated(for: state)
+    content.text = "Hello world!"
+    if state.isDisabled {
+        content.textProperties.color = .systemGray
+    }
+    cell.contentConfiguration = content
+}
+```
+
+^ Useful for List-style highlight and disabled states
 
 ---
 
-# Future Directions
+# [fit] Future Directions
 
 ---
 
@@ -546,7 +567,24 @@ final class BasicCompositionalLayoutGridVC: UIViewController {
 - Performance
 - Customizability
 
-^ TODO: code example
+```swift
+struct HomeView: View {
+    private let columns = [GridItem(.adaptive(minimum: 80)), GridItem(.adaptive(minimum: 80))]
+    var body: some View {
+        ScrollView {
+            LazyVGrid(columns: columns) {
+                ForEach(viewModel.products, id: \.id) { product in
+                    ProductCard(product)
+                }
+            }
+        }
+    }
+}
+```
+
+^ iOS 15 SDK adds pull-to-refresh and customizability for List
+^ Custom scrolling and animation behavior w/ UIScrollViewDelegate for example
+^ Unusual layouts
 
 ---
 
@@ -556,21 +594,25 @@ final class BasicCompositionalLayoutGridVC: UIViewController {
 - self-sizing cells w/ dynamic height are generally easier
 - Consider using SwiftUI.List too
 
+^ CollectionViewCells have variable width, often making them more difficult to implement self-sizing behavior than table view
+
 ---
 
 ## Conclusion
 
 - Find the right fit
-- Older ways and SwiftUI work too
+- Older ways and SwiftUI work too, but know what the latest APIs are
 - You mostly don't need UITableView anymore
 - UICollectionView is _really_ flexible and performant
 - SwiftUI's Grid views are still somewhat lacking in comparison
+
+^ I hope we get something as performant and powerful as collectionview in SwiftUI
 
 ---
 
 ## References and Miscellaneous
 
-- Transitions and dynamically changing layout
+---
 
 ### OSS Examples
 
@@ -580,23 +622,11 @@ final class BasicCompositionalLayoutGridVC: UIViewController {
 * Abstracting many layouts [WenchaoD/FSPagerView](https://github.com/WenchaoD/FSPagerView)
 * Neat slanted layout [yacir/CollectionViewSlantedLayout](https://github.com/yacir/CollectionViewSlantedLayout)
 * Abstraction based on delegates [airbnb/MagazineLayout](https://github.com/airbnb/MagazineLayout)
-
-### UICollectionViewFlowLayout
-* Easier than doing a custom layout from scratch
-* Demo of making a custom layout like Pinterest
-* 簡単なレイアウトなら、実装コストがより低いので、完全にカスタムなレイアウトを使うより好ましい
-
-### Examples
 * Pinterest-like layout [ChernyshenkoTaras/SquareFlowLayout](https://github.com/ChernyshenkoTaras/SquareFlowLayout)
 * Carousel layout: [zepojo/UPCarouselFlowLayout](https://github.com/zepojo/UPCarouselFlowLayout)
-*  UIKitDynamics [GitHub - roberthein/BouncyLayout: Make. It. Bounce.](https://github.com/roberthein/BouncyLayout)
+* UIKitDynamics [GitHub - roberthein/BouncyLayout: Make. It. Bounce.](https://github.com/roberthein/BouncyLayout)
 
-### Comparison w/ SwiftUI.Grid
-* Performance
-* Custom scrolling and animation behavior
-* Unusual layouts
-
-* UIScrollViewDelegate
+---
 
 ### Timeline
 
@@ -615,9 +645,13 @@ final class BasicCompositionalLayoutGridVC: UIViewController {
 	* UIListSeparatorConfiguration
 * 2021 / iOS 15
 	* cell configuration new features
-	*  DiffableDataSourceとCompositionalLayoutのさらなる進化
+	* DiffableDataSource & CompositionalLayout new features
+
+---
 
 ## Reference
+
+// TODO: get video titles
 
 * https://developer.apple.com/videos/play/wwdc2012/219/
 * UIKit Dynamics
@@ -625,9 +659,5 @@ final class BasicCompositionalLayoutGridVC: UIViewController {
 	* https://developer.apple.com/videos/play/wwdc2013/221/
 * https://developer.apple.com/documentation/uikit/uicollectionviewlayout
 * [About iOS Collection Views](https://developer.apple.com/library/archive/documentation/WindowsViews/Conceptual/CollectionViewPGforIOS/Introduction/Introduction.html#//apple_ref/doc/uid/TP40012334-CH1-SW1)
-
-## Miscellaneous
-* Change layout dynamically
-> To create an interactive transition—one that is driven by a gesture recognizer or touch events—use the  [startInteractiveTransition(to:completion:)](https://developer.apple.com/documentation/uikit/uicollectionview/1618098-startinteractivetransition)  method to change the layout object. That method installs an intermediate layout object, which works with your gesture recognizer or event-handling code to track the transition progress. When your event-handling code determines that the transition is finished, it calls the  [finishInteractiveTransition()](https://developer.apple.com/documentation/uikit/uicollectionview/1618080-finishinteractivetransition)  or  [cancelInteractiveTransition()](https://developer.apple.com/documentation/uikit/uicollectionview/1618075-cancelinteractivetransition)  method to remove the intermediate layout object and install the intended target layout object.
 * https://developer.apple.com/documentation/uikit/uicollectionview/1618017-setcollectionviewlayout
 * https://developer.apple.com/videos/play/wwdc2021/10252/
