@@ -46,7 +46,7 @@ autoscale: true
 
 ## Definition
 
-- Standard Grid
+- Standard Grid, complex grid, list, and more
 - Difference w/ UITableView
 - Manages multiple scrolling views
     - **completely configurable** layout
@@ -121,46 +121,40 @@ extension CollectionViewBasicsVC: UICollectionViewDataSource {
 
 ---
 
-## Completely configurable🤔
+## Complex Grid
 
-- Not just basic grids!
-- Lists, complex grids, 3D stacks, carousels, or anything
+- UICollectionView CompositionalLayout
+- Complex, grouped sections
+- Convenient for future proofing simpler views
 
----
-
-## Examples
-
----
-
-## Spinner
-
-- [jVirus/uicollectionview-layouts-kit](https://github.com/jVirus/uicollectionview-layouts-kit)
-
-![80%right](assets/spinner.gif)
+![fit|right](assets/compositional_layout.jpeg)
 
 ---
 
-## Safari
+## Code
 
-- [jVirus/uicollectionview-layouts-kit](https://github.com/jVirus/uicollectionview-layouts-kit)
+```swift
+final class BasicCompositionalLayoutGridVC: UIViewController {
+    enum Section: Hashable { case grid }
 
-![80%right](assets/safari.gif)
+    private let data = ["pencil", "trash", "paperplane", "calendar", "lightbulb"]
 
----
+    private lazy var collectionView = UICollectionView(frame: view.bounds, collectionViewLayout: layout)
+    private lazy var layout = UICollectionViewCompositionalLayout { sectionIndex, environment in
+        let itemSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(0.5), heightDimension: .fractionalHeight(1.0))
+        let item = NSCollectionLayoutItem(layoutSize: itemSize)
+        item.contentInsets = NSDirectionalEdgeInsets(top: 4, leading: 4, bottom: 4, trailing: 4)
 
-## Carousel
+        let groupSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0), heightDimension: .fractionalWidth(0.5))
+        let group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, subitems: [item])
 
-- [zepojo/UPCarouselFlowLayout](https://github.com/zepojo/UPCarouselFlowLayout)
+        return NSCollectionLayoutSection(group: group)
+    }
+    private lazy var dataSource = UICollectionViewDiffableDataSource<Section, String>(collectionView: collectionView) {...}
 
-![80%right](assets/carousel.gif)
-
----
-
-## BounceyLayout
-
-- [GitHub - roberthein/BouncyLayout: Make. It. Bounce.](https://github.com/roberthein/BouncyLayout)
-
-![80%right](assets/bounce.gif)
+    override func viewDidLoad() {...}
+}
+```
 
 ---
 
@@ -207,39 +201,46 @@ final class ListVC: UIViewController {
 
 ---
 
-## CompositionalLayout
+## Completely configurable🤔
 
-- Complex, grouped sections
-- Convenient for future proofing simpler views
-
-![fit|right](assets/compositional_layout.jpeg)
+- Not just basic grids!
+- Lists, complex grids, 3D stacks, carousels, or anything
 
 ---
 
-## Code
+## Examples
 
-```swift
-final class BasicCompositionalLayoutGridVC: UIViewController {
-    enum Section: Hashable { case grid }
+---
 
-    private let data = ["pencil", "trash", "paperplane", "calendar", "lightbulb"]
+## Spinner
 
-    private lazy var collectionView = UICollectionView(frame: view.bounds, collectionViewLayout: layout)
-    private lazy var layout = UICollectionViewCompositionalLayout { sectionIndex, environment in
-        let itemSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(0.5), heightDimension: .fractionalHeight(1.0))
-        let item = NSCollectionLayoutItem(layoutSize: itemSize)
-        item.contentInsets = NSDirectionalEdgeInsets(top: 4, leading: 4, bottom: 4, trailing: 4)
+- [jVirus/uicollectionview-layouts-kit](https://github.com/jVirus/uicollectionview-layouts-kit)
 
-        let groupSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0), heightDimension: .fractionalWidth(0.5))
-        let group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, subitems: [item])
+![80%right](assets/spinner.gif)
 
-        return NSCollectionLayoutSection(group: group)
-    }
-    private lazy var dataSource = UICollectionViewDiffableDataSource<Section, String>(collectionView: collectionView) {...}
+---
 
-    override func viewDidLoad() {...}
-}
-```
+## Safari
+
+- [jVirus/uicollectionview-layouts-kit](https://github.com/jVirus/uicollectionview-layouts-kit)
+
+![80%right](assets/safari.gif)
+
+---
+
+## Carousel
+
+- [zepojo/UPCarouselFlowLayout](https://github.com/zepojo/UPCarouselFlowLayout)
+
+![80%right](assets/carousel.gif)
+
+---
+
+## BounceyLayout
+
+- [GitHub - roberthein/BouncyLayout: Make. It. Bounce.](https://github.com/roberthein/BouncyLayout)
+
+![80%right](assets/bounce.gif)
 
 ---
 
@@ -372,7 +373,7 @@ open class BouncyLayout: UICollectionViewFlowLayout {
 
 ---
 
-## DiffableDataSources
+## UICollectionViewDiffableDataSource
 
 - Fits most cases
 - iOS 14 and 15 added
@@ -383,7 +384,7 @@ open class BouncyLayout: UICollectionViewFlowLayout {
 - [SE-0240: Ordered Collection Diffing](https://github.com/apple/swift-evolution/blob/main/proposals/0240-ordered-collection-diffing.md) is your friend
     - Find inserted, deleted, and updated items/sections, then simply use [`performBatchUpdates(_:completion:)`](https://developer.apple.com/documentation/uikit/uicollectionview/1618045-performbatchupdates)
 
-^ Seems easy to move from RxDataSources if you haven't already
+^ Seems easy to move from IGListKit and RxDataSources if you haven't already
 
 ---
 
@@ -628,7 +629,7 @@ struct HomeView: View {
 
 ---
 
-### Timeline
+## Timeline
 
 * 2016 or earlier / iOS 10
 	* DataSourcePrefetching
@@ -651,13 +652,17 @@ struct HomeView: View {
 
 ## Reference
 
-// TODO: get video titles
+- [UICollectionViewLayout](https://developer.apple.com/documentation/uikit/uicollectionviewlayout)
+- [About iOS Collection Views](https://developer.apple.com/library/archive/documentation/WindowsViews/Conceptual/CollectionViewPGforIOS/Introduction/Introduction.html#//apple_ref/doc/uid/TP40012334-CH1-SW1)
 
-* https://developer.apple.com/videos/play/wwdc2012/219/
-* UIKit Dynamics
-	* https://developer.apple.com/videos/play/wwdc2013/206/
-	* https://developer.apple.com/videos/play/wwdc2013/221/
-* https://developer.apple.com/documentation/uikit/uicollectionviewlayout
-* [About iOS Collection Views](https://developer.apple.com/library/archive/documentation/WindowsViews/Conceptual/CollectionViewPGforIOS/Introduction/Introduction.html#//apple_ref/doc/uid/TP40012334-CH1-SW1)
-* https://developer.apple.com/documentation/uikit/uicollectionview/1618017-setcollectionviewlayout
-* https://developer.apple.com/videos/play/wwdc2021/10252/
+---
+
+## WWDC Videos
+- [Advances in UICollectionView](https://developer.apple.com/videos/play/wwdc2020/10097/)
+- [Make blazing fast lists and collection views](https://developer.apple.com/videos/play/wwdc2021/10252/)
+- [Advances in diffable data sources](https://developer.apple.com/videos/play/wwdc2020/10045/)
+- [Lists in UICollectionView](https://developer.apple.com/videos/play/wwdc2020/10026/)
+- [Modern cell configuration](https://developer.apple.com/videos/play/wwdc2020/10027/)
+- [A Tour of UICollectionView](https://developer.apple.com/videos/play/wwdc2018/225/)
+- [Drag and Drop with Collection and Table View](https://developer.apple.com/videos/play/wwdc2017/223/)
+- [What's New in UICollectionView in iOS 10](https://developer.apple.com/videos/play/wwdc2016/219/)
