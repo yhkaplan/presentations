@@ -7,17 +7,6 @@ autoscale: true
 
 ---
 
-## TOC
-
-* Intro
-* Topics skipped
-* Layout
-* Data and Cell Configuration
-* Future Directions
-* References and Miscellaneous
-
----
-
 ## Intro
 
 - Joshua Kaplan (`yhkaplan`)
@@ -27,6 +16,14 @@ autoscale: true
 - He/him
 
 ![fit, right](assets/shira.HEIC)
+
+---
+
+## Topics
+
+* Layout
+* Data and Cell Configuration
+* Future Directions
 
 ---
 
@@ -46,7 +43,7 @@ autoscale: true
 
 ## Definition
 
-- Standard Grid, complex grid, list, and more
+- Standard grid, complex grid, list, and more
 - Difference w/ UITableView
 - Manages multiple scrolling views
     - **completely configurable** layout
@@ -162,7 +159,7 @@ final class BasicCompositionalLayoutGridVC: UIViewController {
 
 - iOS 14+
 - Part of CompositionalLayout
-- All main styles available
+- All main UITableView styles available
 
 ![inline, fit](assets/list_plain.png) ![inline, fit](assets/list_grouped.png) ![inline, fit](assets/list_inset_grouped.png)
 
@@ -203,8 +200,8 @@ final class ListVC: UIViewController {
 
 ## Completely configurable🤔
 
-- Not just basic grids!
-- Lists, complex grids, 3D stacks, carousels, or anything
+- Not just grids and lists!
+- 3D stacks, carousels, or anything
 
 ---
 
@@ -658,6 +655,7 @@ struct HomeView: View {
 ---
 
 ## WWDC Videos
+
 - [Advances in UICollectionView](https://developer.apple.com/videos/play/wwdc2020/10097/)
 - [Make blazing fast lists and collection views](https://developer.apple.com/videos/play/wwdc2021/10252/)
 - [Advances in diffable data sources](https://developer.apple.com/videos/play/wwdc2020/10045/)
