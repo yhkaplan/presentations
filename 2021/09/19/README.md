@@ -379,6 +379,7 @@ open class BouncyLayout: UICollectionViewFlowLayout {
     - Reloading completely w/o diff for better performance on large changes
 - Animation behavior difficult to customize
 - [SE-0240: Ordered Collection Diffing](https://github.com/apple/swift-evolution/blob/main/proposals/0240-ordered-collection-diffing.md) is your friend
+    - Swift 5.1
     - Find inserted, deleted, and updated items/sections, then simply use [`performBatchUpdates(_:completion:)`](https://developer.apple.com/documentation/uikit/uicollectionview/1618045-performbatchupdates)
 
 ^ Seems easy to move from IGListKit and RxDataSources if you haven't already
