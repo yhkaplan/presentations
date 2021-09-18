@@ -2,6 +2,19 @@
 
 Repo of all my presentations since Sept of 2020
 
+## 2021
+
+### Using the latest UICollectionView APIs
+
+> A talk given at iOSDC 2021
+
+- [Source](https://github.com/yhkaplan/presentations/tree/main/2021/09/19)
+- [Slides](https://speakerdeck.com/yhkaplan/using-the-latest-uicollectionview-apis)
+- [YouTube - English Version](https://youtu.be/K__6lckEsWo)
+- [YouTube - Japanese Version](https://youtu.be/rXopZ8lGgbI)
+
+---
+
 ## 2020
 
 ### Migrating from UIKit to SwiftUI Efficiently
